@@ -14,7 +14,11 @@
 - **Redis**: 6379端口 (仅容器内部访问)
 
 ## 快速启动
-
+### 使用脚本
+```bash
+chmod +x build.sh
+./build.sh
+```
 ### 使用 Docker Compose (推荐)
 
 ```bash
