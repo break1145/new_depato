@@ -14,6 +14,12 @@
  Date: 19/08/2023 23:38:48
 */
 
+USE depato_lease;
+
+-- 设置字符集
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
+
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
