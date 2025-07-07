@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <ConsoleLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n">
+                <Colors>
+                    <Log4jColor level="info" color="GREEN" />
+                    <Log4jColor level="warn" color="YELLOW" />
+                    <Log4jColor level="error" color="RED" />
+                    <Log4jColor level="fatal" color="RED,BOLD" />
+                </Colors>
+            </ConsoleLayout>
+        </Console>
+        <File name="File" fileName="logs/app.log">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n"/>
+        </File>
+    </Appenders>
+    <Loggers>
+        <Root level="debug">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="File"/>
+        </Root>
+    </Loggers>
+</Configuration>
