@@ -8,13 +8,16 @@ WORKDIR /app/frontend
 COPY depato_lease_fe/package*.json ./
 
 # 安装前端依赖
-RUN npm ci --only=production
+RUN npm ci
 
 # 复制前端源代码
 COPY depato_lease_fe/ .
 
-# 构建前端
-RUN npm run build
+# 设置生产环境变量并构建前端
+RUN echo "VITE_APP_NODE_ENV='production'" > .env.production && \
+    echo "VITE_APP_TITLE='后台管理'" >> .env.production && \
+    echo "VITE_APP_BASE_URL='http://localhost:8081'" >> .env.production && \
+    npm run build
 
 # Java后端构建阶段
 FROM maven:3.9.6-openjdk-22 AS backend-builder
@@ -96,26 +99,50 @@ RUN echo "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY
     && echo "USE depato_lease;" >> /opt/init_db.sql \
     && cat /opt/lease_init.sql >> /opt/init_db.sql
 
-# 配置Nginx
+# 配置Nginx - 前端在81端口，代理后端8081端口
 COPY <<EOF /etc/nginx/sites-available/default
 server {
-    listen 80;
+    listen 81;
     server_name localhost;
     
-    # 前端静态文件
-    location / {
+    # 静态资源缓存
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
         root /opt/frontend;
-        try_files \$uri \$uri/ /index.html;
-        index index.html;
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        try_files \$uri =404;
     }
     
-    # 后端API代理
-    location /api/ {
-        proxy_pass http://localhost:8080/;
+    # 后端API代理 - 处理所有API请求，代理到8081端口
+    location ~ ^/(admin|api)/ {
+        proxy_pass http://localhost:8081;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_set_header X-Forwarded-Host \$host;
+        proxy_set_header X-Forwarded-Port \$server_port;
+        
+        # 处理跨域
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods 'GET, POST, PUT, DELETE, OPTIONS';
+        add_header Access-Control-Allow-Headers 'DNT,X-Mx-ReqToken,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization,access-token';
+        
+        if (\$request_method = 'OPTIONS') {
+            return 204;
+        }
+    }
+    
+    # 前端静态文件 - 支持SPA路由
+    location / {
+        root /opt/frontend;
+        try_files \$uri \$uri/ /index.html;
+        index index.html;
+        
+        # 禁用缓存，确保前端更新生效
+        add_header Cache-Control "no-cache, no-store, must-revalidate";
+        add_header Pragma "no-cache";
+        add_header Expires "0";
     }
 }
 EOF
@@ -153,7 +180,7 @@ logfile=/var/log/minio/minio.log
 log_stderr=true
 
 [program:spring]
-command=java -jar /opt/spring-app/app.jar --spring.config.location=/opt/spring-app/application.yml
+command=java -jar /opt/spring-app/app.jar --spring.config.location=/opt/spring-app/application.yml --server.port=8081
 autostart=true
 autorestart=true
 user=root
@@ -185,10 +212,6 @@ sleep 15
 echo "Initializing database..."
 mysql -u root < /opt/init_db.sql
 
-
-
-
-
 # 创建MinIO bucket
 echo "Creating MinIO bucket..."
 sleep 5
@@ -202,8 +225,8 @@ EOF
 
 RUN chmod +x /opt/start.sh
 
-# 暴露端口
-EXPOSE 80 8080 3306 6379 9000 9001
+# 暴露端口：前端81，后端8081，minio 9000和9001，mysql和redis不暴露
+EXPOSE 81 8081 9000 9001
 
 # 启动命令
 CMD ["/opt/start.sh"] 
