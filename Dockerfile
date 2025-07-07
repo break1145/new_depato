@@ -20,7 +20,7 @@ RUN echo "VITE_APP_NODE_ENV='production'" > .env.production && \
     npm run build
 
 # Java后端构建阶段
-FROM maven:3.9.6-openjdk-22 AS backend-builder
+FROM maven:3.9.5-openjdk-17 AS backend-builder
 
 # 设置工作目录
 WORKDIR /app/backend
@@ -45,12 +45,12 @@ FROM ubuntu:22.04
 
 # 设置环境变量
 ENV DEBIAN_FRONTEND=noninteractive
-ENV JAVA_HOME=/usr/lib/jvm/java-22-openjdk-amd64
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 ENV PATH=$JAVA_HOME/bin:$PATH
 
 # 安装必要的软件包
 RUN apt-get update && apt-get install -y \
-    openjdk-22-jdk \
+    openjdk-17-jdk \
     mysql-server \
     redis-server \
     nginx \
