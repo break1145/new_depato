@@ -28,11 +28,13 @@ WORKDIR /app/backend
 # 创建目录结构
 RUN mkdir -p common model web/web-admin web/web-app
 
-# 复制后端依赖文件
+# 复制所有pom.xml文件
 COPY depato_lease_be/pom.xml ./
 COPY depato_lease_be/common/pom.xml ./common/
 COPY depato_lease_be/model/pom.xml ./model/
 COPY depato_lease_be/web/pom.xml ./web/
+COPY depato_lease_be/web/web-admin/pom.xml ./web/web-admin/
+COPY depato_lease_be/web/web-app/pom.xml ./web/web-app/
 
 # 下载依赖
 RUN mvn dependency:go-offline -B
