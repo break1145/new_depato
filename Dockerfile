@@ -25,6 +25,9 @@ FROM maven:3.8.5-openjdk-17 as backend-builder
 # 设置工作目录
 WORKDIR /app/backend
 
+# 创建目录结构
+RUN mkdir -p common model web/web-admin web/web-app
+
 # 复制后端依赖文件
 COPY depato_lease_be/pom.xml ./
 COPY depato_lease_be/common/pom.xml ./common/
