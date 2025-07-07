@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  # 主应用容器（包含前端、后端、数据库等所有服务）
+  depato-lease-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"           # Nginx前端
+      - "8080:8080"       # Spring Boot后端
+      - "3306:3306"       # MySQL
+      - "6379:6379"       # Redis
+      - "9000:9000"       # MinIO API
+      - "9001:9001"       # MinIO Console
+    environment:
+      - MYSQL_ROOT_PASSWORD=
+      - MYSQL_DATABASE=depato_lease
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - redis_data:/var/lib/redis
+      - minio_data:/opt/minio/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  mysql_data:
+  redis_data:
+  minio_data: 
