@@ -20,7 +20,7 @@ RUN echo "VITE_APP_NODE_ENV='production'" > .env.production && \
     npm run build
 
 # Java后端构建阶段
-FROM maven:3.9.5-openjdk-17 AS backend-builder
+FROM maven:3.8.5-openjdk-17 as backend-build
 
 # 设置工作目录
 WORKDIR /app/backend
