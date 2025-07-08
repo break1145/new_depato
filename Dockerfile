@@ -11,7 +11,7 @@ WORKDIR /app/frontend
 COPY depato_lease_fe/package*.json ./
 
 # 安装前端依赖
-RUN npm ci --dev
+RUN rm -rf node_modules && npm install
 
 # 复制前端源代码
 COPY depato_lease_fe/ .
