@@ -39,17 +39,8 @@ ARG HTTP_PROXY=http://47.117.125.48:7890
 ARG HTTPS_PROXY=http://47.117.125.48:7890
 
 # 设置环境变量，使 Maven 使用代理
-RUN echo "<settings>" >> /usr/share/maven/conf/settings.xml && \
-    echo "  <proxies>" >> /usr/share/maven/conf/settings.xml && \
-    echo "    <proxy>" >> /usr/share/maven/conf/settings.xml && \
-    echo "      <id>example-proxy</id>" >> /usr/share/maven/conf/settings.xml && \
-    echo "      <active>true</active>" >> /usr/share/maven/conf/settings.xml && \
-    echo "      <protocol>http</protocol>" >> /usr/share/maven/conf/settings.xml && \
-    echo "      <host>47.117.125.48</host>" >> /usr/share/maven/conf/settings.xml && \
-    echo "      <port>7890</port>" >> /usr/share/maven/conf/settings.xml && \
-    echo "    </proxy>" >> /usr/share/maven/conf/settings.xml && \
-    echo "  </proxies>" >> /usr/share/maven/conf/settings.xml && \
-    echo "</settings>" >> /usr/share/maven/conf/settings.xml
+RUN printf '<settings>\n  <proxies>\n    <proxy>\n      <id>example-proxy</id>\n      <active>true</active>\n      <protocol>http</protocol>\n      <host>47.117.125.48</host>\n      <port>7890</port>\n    </proxy>\n  </proxies>\n</settings>\n' > /usr/share/maven/conf/settings.xml
+
 # 设置工作目录
 WORKDIR /app/backend
 
@@ -72,6 +63,7 @@ COPY depato_lease_be/ .
 
 # 构建后端
 RUN mvn clean package -DskipTests
+
 
 # 最终运行阶段
 FROM ubuntu:22.04
