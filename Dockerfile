@@ -18,8 +18,9 @@ COPY depato_lease_fe/package*.json ./
 
 # 安装前端依赖
 RUN rm -rf node_modules && npm install
-RUN npm install -g vite
 
+# 安装 vite
+RUN npm install -g vite
 
 # 复制前端源代码
 COPY depato_lease_fe/ .
@@ -245,4 +246,4 @@ RUN chmod +x /opt/start.sh
 EXPOSE 81 8081 9000 9001
 
 # 启动命令
-CMD ["/opt/start.sh"] 
+CMD ["/opt/start.sh"]
