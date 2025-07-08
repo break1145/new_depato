@@ -1,6 +1,9 @@
 # 使用多阶段构建
 FROM node:18-alpine AS frontend-builder
 
+ARG HTTP_PROXY=http://127.0.0.1:7890
+ARG HTTPS_PROXY=http://127.0.0.1:7890
+
 # 设置工作目录
 WORKDIR /app/frontend
 
