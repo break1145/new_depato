@@ -12,6 +12,8 @@ COPY depato_lease_fe/package*.json ./
 
 # 安装前端依赖
 RUN rm -rf node_modules && npm install
+RUN npm install -g vite
+
 
 # 复制前端源代码
 COPY depato_lease_fe/ .
