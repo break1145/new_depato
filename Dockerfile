@@ -1,8 +1,14 @@
 # 使用多阶段构建
 FROM node:18-alpine AS frontend-builder
 
+# 设置 HTTP 和 HTTPS 代理
 ARG HTTP_PROXY=http://47.117.125.48:7890
 ARG HTTPS_PROXY=http://47.117.125.48:7890
+
+# 设置环境变量，使得 npm 使用代理
+ENV HTTP_PROXY=${HTTP_PROXY}
+ENV HTTPS_PROXY=${HTTPS_PROXY}
+ENV NO_PROXY="localhost,127.0.0.1,::1"
 
 # 设置工作目录
 WORKDIR /app/frontend
