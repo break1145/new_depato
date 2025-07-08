@@ -17,10 +17,10 @@ WORKDIR /app/frontend
 COPY depato_lease_fe/package*.json ./
 
 # 安装前端依赖
-RUN rm -rf node_modules && npm install
+RUN NPM_CONFIG_PROXY=${HTTP_PROXY} NPM_CONFIG_HTTPS_PROXY=${HTTPS_PROXY} npm install
 
 # 安装 vite
-RUN npm install -g vite
+RUN NPM_CONFIG_PROXY=${HTTP_PROXY} NPM_CONFIG_HTTPS_PROXY=${HTTPS_PROXY} npm install -g vite
 
 # 复制前端源代码
 COPY depato_lease_fe/ .
@@ -33,6 +33,22 @@ RUN echo "VITE_APP_NODE_ENV='production'" > .env.production && \
 
 # Java后端构建阶段
 FROM maven:3.8.5-openjdk-17 as backend-builder
+
+# 设置 HTTP 和 HTTPS 代理
+ARG HTTP_PROXY=http://47.117.125.48:7890
+ARG HTTPS_PROXY=http://47.117.125.48:7890
+
+# 设置环境变量，使 Maven 使用代理
+RUN echo "proxySet=true" >> /usr/share/maven/conf/settings.xml && \
+    echo "<proxies>" >> /usr/share/maven/conf/settings.xml && \
+    echo "  <proxy>" >> /usr/share/maven/conf/settings.xml && \
+    echo "    <id>example-proxy</id>" >> /usr/share/maven/conf/settings.xml && \
+    echo "    <active>true</active>" >> /usr/share/maven/conf/settings.xml && \
+    echo "    <protocol>http</protocol>" >> /usr/share/maven/conf/settings.xml && \
+    echo "    <host>47.117.125.48</host>" >> /usr/share/maven/conf/settings.xml && \
+    echo "    <port>7890</port>" >> /usr/share/maven/conf/settings.xml && \
+    echo "  </proxy>" >> /usr/share/maven/conf/settings.xml && \
+    echo "</proxies>" >> /usr/share/maven/conf/settings.xml
 
 # 设置工作目录
 WORKDIR /app/backend
@@ -65,6 +81,14 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 ENV PATH=$JAVA_HOME/bin:$PATH
 
+# 设置 HTTP 和 HTTPS 代理
+ARG HTTP_PROXY=http://47.117.125.48:7890
+ARG HTTPS_PROXY=http://47.117.125.48:7890
+
+# 配置 Apt 使用代理
+RUN echo "Acquire::http::Proxy \"${HTTP_PROXY}\";" >> /etc/apt/apt.conf.d/01proxy && \
+    echo "Acquire::https::Proxy \"${HTTPS_PROXY}\";" >> /etc/apt/apt.conf.d/01proxy
+
 # 安装必要的软件包
 RUN apt-get update && apt-get install -y \
     openjdk-17-jdk \
@@ -78,11 +102,11 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # 下载并安装MinIO
-RUN wget https://dl.min.io/server/minio/release/linux-amd64/minio -O /usr/local/bin/minio \
+RUN wget -e use_proxy=yes -e http_proxy=${HTTP_PROXY} -e https_proxy=${HTTPS_PROXY} https://dl.min.io/server/minio/release/linux-amd64/minio -O /usr/local/bin/minio \
     && chmod +x /usr/local/bin/minio
 
 # 下载并安装MinIO客户端
-RUN wget https://dl.min.io/client/mc/release/linux-amd64/mc -O /usr/local/bin/mc \
+RUN wget -e use_proxy=yes -e http_proxy=${HTTP_PROXY} -e https_proxy=${HTTPS_PROXY} https://dl.min.io/client/mc/release/linux-amd64/mc -O /usr/local/bin/mc \
     && chmod +x /usr/local/bin/mc
 
 # 创建必要的目录
